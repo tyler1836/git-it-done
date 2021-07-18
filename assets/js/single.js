@@ -1,54 +1,67 @@
 var issueContainerEl = document.querySelector("#issues-container");
 var limitWarningEl = document.querySelector("#limit-warning");
+var repoNameEl = document.querySelector("#repo-name");
+
+var getRepoName = function () {
+    var queryString = document.location.search
+    var repoName = queryString.split("=")[1];
+    if (repoName) {
+        getRepoIssue(repoName)
+        repoNameEl.textContent = repoName;
+    }
+    else {
+        document.location.replace("./index.html")
+    }
+}
 
 
-var getRepoIssue = function (repo){
-    var apiUrl =  "https://api.github.com/repos/" + repo + "/issues?direction=asc";
+var getRepoIssue = function (repo) {
+    var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
 
-    fetch(apiUrl).then(function(response){
-        if (response.ok){
-            response.json().then(function(data){
+    fetch(apiUrl).then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
                 displayIssues(data);
 
-                if(response.headers.get("Link")){
+                if (response.headers.get("Link")) {
                     console.log("repo has more than 30 issues")
                     displayWarning(repo);
                 }
             });
         }
         else {
-            alert("There was a problem with your request!")
+            document.location.replace("./index.html")
         }
     });
 }
-var displayIssues = function(issues){
+var displayIssues = function (issues) {
 
-    if (issues.length === 0){
+    if (issues.length === 0) {
         issueContainerEl.textContent = "This repo has no open issues!"
         return;
     }
 
     for (let i = 0; i < issues.length; i++) {
-       
-            var issueEl = document.createElement("a");
-            issueEl.classList = "list-item flex-row justify-space-between align-center";
-            issueEl.setAttribute("href", issues[i].html_url);
-            issueEl.setAttribute("target", "_blank");
 
-            var titleEl = document.createElement("span")
-            titleEl.textContent = issues[i].title
+        var issueEl = document.createElement("a");
+        issueEl.classList = "list-item flex-row justify-space-between align-center";
+        issueEl.setAttribute("href", issues[i].html_url);
+        issueEl.setAttribute("target", "_blank");
 
-            issueEl.appendChild(titleEl)
+        var titleEl = document.createElement("span")
+        titleEl.textContent = issues[i].title
 
-            var typeEl = document.createElement("span")
+        issueEl.appendChild(titleEl)
 
-            if (issues[i].pull_request){
-                typeEl.textContent = "(Pull request)"
-            }
-            else {
-                typeEl.textContent = "(Issue)"
-            }
-        
+        var typeEl = document.createElement("span")
+
+        if (issues[i].pull_request) {
+            typeEl.textContent = "(Pull request)"
+        }
+        else {
+            typeEl.textContent = "(Issue)"
+        }
+
 
         issueEl.appendChild(typeEl);
 
@@ -57,7 +70,7 @@ var displayIssues = function(issues){
 
 };
 
-var displayWarning = function(repo){
+var displayWarning = function (repo) {
 
     limitWarningEl.textContent = "To see more than 30 issues, visit "
 
@@ -69,4 +82,4 @@ var displayWarning = function(repo){
     limitWarningEl.appendChild(linkEl);
 }
 
-getRepoIssue("facebook/react")
+getRepoIssue();
